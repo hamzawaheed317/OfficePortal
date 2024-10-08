@@ -63,10 +63,10 @@
             margin: 0 auto;
         }
 
-        .announcement-content h5 {
-            font-size: 18px;
-            margin-top: 10px;
-        }
+            .announcement-content h5 {
+                font-size: 18px;
+                margin-top: 10px;
+            }
 
         .announcement-image,
         .announcement-video {
@@ -76,9 +76,6 @@
             border-radius: 8px;
             margin-top: 15px;
         }
-
-        /* For smaller screens */
-
 
         .announcement-footer {
             margin-top: 15px;
@@ -109,6 +106,17 @@
         .comments-section {
             margin-top: 15px;
         }
+
+        .heart-icon {
+            font-size: 20px;
+            cursor: pointer;
+            color: #e74c3c; /* Red color */
+            margin-right: 10px;
+        }
+
+            .heart-icon.liked {
+                color: #c0392b; /* Darker red for liked state */
+            }
     </style>
 </head>
 <body>
@@ -152,6 +160,9 @@
                 <div class="announcement-footer">
                     <div class="like-comment">
                         <span class="like-count">@item.LikesCount Likes</span>
+                        <a href="#" class="like-btn" data-announcement-id="@item.Id" data-likes-count="@item.LikesCount">
+                            <i class="heart-icon">&#9829;</i> <!-- Heart icon -->
+                        </a>
                         <a href="#" class="view-comments" data-announcement-id="@item.Id">View all comments</a>
                     </div>
                     <div class="add-comment">
@@ -168,8 +179,6 @@
         }
     </div>
 
-    <!-- jQuery Script -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- jQuery Script -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
@@ -193,7 +202,6 @@
             });
 
             // Post a comment
-            // Post a comment
             $(document).on('click', '.post-comment-btn', function () {
                 const announcementId = $(this).data('announcement-id');
                 const commentInput = $(this).closest('.add-comment').find('.comment-input');
@@ -203,7 +211,6 @@
                 // Check if comment text is empty
                 if (commentText === '') return;
 
-              
                 $.post('/Comments/Create', {
                     announcementId: announcementId,
                     content: commentText,
@@ -221,10 +228,26 @@
                 });
             });
 
+            // Like an announcement
+            $(document).on('click', '.like-btn', function (e) {
+                e.preventDefault();
+                const announcementId = $(this).data('announcement-id');
+                const currentLikesCount = $(this).data('likes-count');
 
-            // Redirect to the Add Announcement page
-            $('#addAnnouncementBtn').click(function () {
-                window.location.href = '/Announcements/Create';
+                $.post('/Announcements/Like', { announcementId: announcementId }, (response) => {
+                    if (response.success) {
+                        // Update the likes count and toggle liked class
+                        const newLikesCount = currentLikesCount + 1; // Increment likes count
+                        $(this).data('likes-count', newLikesCount);
+                        $(this).closest('.like-comment').find('.like-count').text(newLikesCount + ' Likes');
+                        $(this).find('.heart-icon').addClass('liked'); // Change heart color
+                    } else {
+                        // Handle failure
+                        alert(response.message); // Show error message
+                    }
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error("Error liking announcement: " + textStatus, errorThrown);
+                });
             });
         });
     </script>

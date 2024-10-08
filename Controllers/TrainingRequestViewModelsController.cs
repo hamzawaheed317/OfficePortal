@@ -11,11 +11,13 @@ namespace OfficePortal.Controllers
     {
         private readonly ApplicationDbContext _context;
         private LanguageService _localization;
+        private readonly IEmailService _emailService;
 
-        public TrainingRequestViewModelsController(ApplicationDbContext context, LanguageService localization)
+        public TrainingRequestViewModelsController(ApplicationDbContext context, LanguageService localization, IEmailService emailService)
         {
             _context = context;
             _localization = localization;
+            _emailService = emailService;
 
         }
 
@@ -69,10 +71,21 @@ namespace OfficePortal.Controllers
         public async Task<IActionResult> Create(TrainingRequestViewModel trainingRequestViewModel)
         {
             if (ModelState.IsValid)
-            {  
-                _context.TrainingRequestViewModel.Add(trainingRequestViewModel); 
-                await _context.SaveChangesAsync(); 
+            {
+                UserInfo userInfo = GetUserInfo(); // Replace this with actual fetching logic
 
+                _context.TrainingRequestViewModel.Add(trainingRequestViewModel); 
+                await _context.SaveChangesAsync();
+
+                string subject = "New Training Request Form Submitted";
+                string messageText = $"A new Training Request form has been submitted.\n\n" +
+                                     $"Details:\n" +
+                                     $"Entity: {trainingRequestViewModel.TrainingEntity}\n" +
+                                     $"Amount: {trainingRequestViewModel.Amount}\n" +
+                                     $"Location: {trainingRequestViewModel.Location}\n";
+
+                // Send email
+                await _emailService.SendEmailAsync(userInfo.email, subject, messageText);
                 return RedirectToAction(nameof(Index)); 
             }
             return View(trainingRequestViewModel);
@@ -87,7 +100,8 @@ namespace OfficePortal.Controllers
                 Grade = "A1",
                 Employee_Number = "12345",
                 Department = "IT",
-                role = "Line Manager"
+                role = "Line Manager",
+                email= "hasanmughal538@gmail.com"
             };
         }
         // GET: TrainingRequestViewModels/Edit/5

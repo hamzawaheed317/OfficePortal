@@ -36,9 +36,11 @@ namespace OfficePortal.Controllers
         #endregion
         public IActionResult Login()
         {
-            return View(new LoginViewModel());
+            // Logic for the login page
+            return View();
         }
-      
+        
+
         public IActionResult Privacy()
         {
             return View();

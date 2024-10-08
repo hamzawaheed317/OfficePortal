@@ -22,15 +22,13 @@ namespace OfficePortal.Controllers
         // GET: EventModels
         public async Task<IActionResult> Index()
         {
-              return _context.EventModel != null ? 
-                          View(await _context.EventModel.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.EventModel'  is null.");
+            return View(await _context.EventModel.ToListAsync());
         }
 
         // GET: EventModels/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.EventModel == null)
+            if (id == null)
             {
                 return NotFound();
             }
@@ -48,7 +46,7 @@ namespace OfficePortal.Controllers
         // GET: EventModels/Create
         public IActionResult Create()
         {
-            return View();
+            return PartialView("_CreateEvent", new EventModel());
         }
 
         // POST: EventModels/Create
@@ -62,16 +60,18 @@ namespace OfficePortal.Controllers
             {
                 _context.Add(eventModel);
                 await _context.SaveChangesAsync();
-
-                return RedirectToAction("Privacy", "Home");
+                return RedirectToAction(nameof(Index));
             }
             return View(eventModel);
         }
-
+        public IActionResult Calender()
+        {
+            return View("Calender");
+        }
         // GET: EventModels/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.EventModel == null)
+            if (id == null)
             {
                 return NotFound();
             }
@@ -118,36 +118,11 @@ namespace OfficePortal.Controllers
             }
             return View(eventModel);
         }
-        [HttpGet]
-        [HttpGet]
-        public JsonResult GetEvents()
+
+        // GET: EventModels/Delete/5
+        public async Task<IActionResult> Delete(int? id)
         {
-            var events = _context.EventModel.Select(e => new
-            {
-                title = e.Title,
-                start = e.StartDate.ToString("yyyy-MM-ddTHH:mm:ss"),  // Format the date correctly
-                end = e.EndDate.ToString("yyyy-MM-ddTHH:mm:ss"),
-                label = e.Label
-            }).ToList();
-
-            return Json(events);
-        }
-
-
-        // Action to get event labels
-        [HttpGet]
-        public JsonResult GetEventLabels()
-        {
-            var labels = _context.EventModel.Select(e => e.Label).Distinct().ToList();
-            return Json(labels);
-        }
-
-    
-
-    // GET: EventModels/Delete/5
-    public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null || _context.EventModel == null)
+            if (id == null)
             {
                 return NotFound();
             }
@@ -167,23 +142,19 @@ namespace OfficePortal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.EventModel == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.EventModel'  is null.");
-            }
             var eventModel = await _context.EventModel.FindAsync(id);
             if (eventModel != null)
             {
                 _context.EventModel.Remove(eventModel);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool EventModelExists(int id)
         {
-          return (_context.EventModel?.Any(e => e.Id == id)).GetValueOrDefault();
+            return _context.EventModel.Any(e => e.Id == id);
         }
     }
 }

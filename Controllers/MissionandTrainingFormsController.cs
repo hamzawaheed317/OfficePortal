@@ -13,10 +13,11 @@ namespace OfficePortal.Controllers
     public class MissionandTrainingFormsController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public MissionandTrainingFormsController(ApplicationDbContext context)
+        private readonly IEmailService _emailService;
+        public MissionandTrainingFormsController(ApplicationDbContext context, IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         // GET: MissionandTrainingForms
@@ -62,12 +63,26 @@ namespace OfficePortal.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create( MissionandTrainingForm missionandTrainingForm)
+        public async Task<IActionResult> Create(MissionandTrainingForm missionandTrainingForm)
         {
             if (ModelState.IsValid)
             {
+                // Save the form data to the database
                 _context.Add(missionandTrainingForm);
                 await _context.SaveChangesAsync();
+
+                // Prepare email content
+                string subject = "New Mission and Training Form Submitted";
+                string messageText = $"A new mission and training form has been submitted.\n\n" +
+                                     $"Details:\n" +
+                                     $"Name: {missionandTrainingForm.Departure_date}\n" +
+                                     $"Date: {missionandTrainingForm.Departure_time}\n" +
+                                     $"Description: {missionandTrainingForm.Purpose}\n";
+
+                // Send email
+                await _emailService.SendEmailAsync("hasanmughal538@gmail.com", subject, messageText);
+
+                // Redirect to the index page after saving and sending the email
                 return RedirectToAction(nameof(Index));
             }
             return View(missionandTrainingForm);

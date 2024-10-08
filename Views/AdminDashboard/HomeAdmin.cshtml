@@ -1,0 +1,113 @@
+﻿@model IEnumerable<OfficePortal.Models.Announcement>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements</title>
+    <link rel="stylesheet" href="~/css/styles.css"> <!-- Include your CSS file -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .announcements {
+            width: 70%; /* Announcement section takes 70% of the width */
+        }
+        .calendar {
+            width: 25%; /* Calendar section takes 25% of the width */
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        .requests {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .request-section {
+            width: 30%; /* Each request section takes 30% of the width */
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        .announcement {
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #fff;
+        }
+        .announcement h4 {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Announcements</h1>
+
+    <div class="requests">
+        <div class="request-section">
+            <h3>Request Section 1</h3>
+            <!-- Add your request details here -->
+            <p>No requests available.</p>
+        </div>
+        <div class="request-section">
+            <h3>Request Section 2</h3>
+            <!-- Add your request details here -->
+            <p>No requests available.</p>
+        </div>
+        <div class="request-section">
+            <h3>Request Section 3</h3>
+            <!-- Add your request details here -->
+            <p>No requests available.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="announcements">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var announcement in Model)
+                {
+                    if (announcement != null) // Check if the announcement is not null
+                    {
+                        <div class="announcement">
+                            <p>@announcement.Content</p>
+                            <small>@announcement.PostedDate.ToString("MMMM dd, yyyy")</small>
+                        </div>
+                    }
+                }
+            }
+            else
+            {
+                <p>No announcements available.</p>
+                // Fallback message if Model is null or empty
+            }
+        </div>
+
+        <div class="calendar">
+            <h3>Calendar</h3>
+            <div id="calendar">
+                <!-- Here, you'll need a small calendar widget -->
+                <iframe src="https://calendar.google.com/calendar/embed?src=YOUR_CALENDAR_ID&ctz=America/New_York"
+                        style="border: 0" width="100%" height="400" frameborder="0" scrolling="no"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // You can add any JavaScript functionality here
+    </script>
+
+</body>
+</html>

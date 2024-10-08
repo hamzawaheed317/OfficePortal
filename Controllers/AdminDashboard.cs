@@ -18,10 +18,15 @@ namespace OfficePortal.Controllers
             _localization = localization;
 
         }
-        public IActionResult Index()
+        public async Task<IActionResult> HomeAdmin()
         {
-            return View("");
+            return View(await _context.Announcement.ToListAsync());
         }
+        public IActionResult Home()
+        {
+            return View("HomeAdmin");
+        }
+        
         public async Task<IActionResult> FormRequestAdminPage()
         {
             var missionAndTrainingForms = await _context.MissionandTrainingForm

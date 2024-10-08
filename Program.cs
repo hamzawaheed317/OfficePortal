@@ -45,14 +45,7 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 builder.Services.AddControllersWithViews();
 
 // Register EmailService with SMTP configuration
-builder.Services.AddScoped<EmailService>(provider =>
-{
-    string smtpServer = "smtp.gmail.com"; // Gmail's SMTP server
-    int smtpPort = 587; // Port for TLS/SSL
-    string smtpUsername = "hamzawaheed317@gmail.com"; // Your Gmail address
-    string smtpPassword = "5aGVbvTY!PcLHr"; // Your Gmail app password
-    return new EmailService(smtpServer, smtpPort, smtpUsername, smtpPassword);
-});
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
     .AddNegotiate();
@@ -67,13 +60,15 @@ builder.Services.AddRazorPages();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ApplicationDbContext") ?? throw new InvalidOperationException("Connection string 'ApplicationDbContext' not found.")));
 
+// Add a middleware to check for mobile devices
+builder.Services.AddSingleton<UserAgentService>(); // Register custom service for user agent detection
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -86,7 +81,35 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-// Set default routing
+// Middleware to check if the user is on a mobile device and handle redirects
+app.Use(async (context, next) =>
+{
+    var userAgentService = context.RequestServices.GetRequiredService<UserAgentService>();
+
+    // Check if request is from a mobile device and not already on Login page
+    if (userAgentService.IsMobileDevice(context.Request) &&
+        !context.Request.Path.Equals("/Home/Login", StringComparison.OrdinalIgnoreCase))
+    {
+        // Redirect mobile users to /Home/Login
+        context.Response.Redirect("/Home/Login");
+        return;
+    }
+
+    // Check if request is from a desktop device and is the initial request (not from Home/Index or other paths)
+    if (userAgentService.IsDesktopDevice(context.Request) &&
+        !context.Request.Path.Equals("/Home/Index", StringComparison.OrdinalIgnoreCase) &&
+        string.IsNullOrEmpty(context.Request.Headers["Referer"])) // No previous page
+    {
+        // Redirect desktop users to /Home/Index only if this is their first page load
+        context.Response.Redirect("/Home/Index");
+        return;
+    }
+
+    // If no redirection is needed, continue processing the request
+    await next();
+});
+
+// Set up default routing with fallback
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
